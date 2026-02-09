@@ -1,0 +1,25 @@
+# Build outputs
+bin/
+obj/
+
+# .NET tools
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.csproj.user
+
+# IDE/Editor
+.vs/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Publish
+publish/
