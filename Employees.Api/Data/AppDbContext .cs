@@ -14,9 +14,15 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Employee>(e =>
         {
             e.HasKey(x => x.Id);
+
+            // Configurar ID para não ser gerado pelo banco (SQLite não suporta GUID nativo)
+            e.Property(x => x.Id)
+                .ValueGeneratedOnAdd();
+
             e.Property(x => x.FullName).IsRequired().HasMaxLength(150);
             e.Property(x => x.Document).IsRequired().HasMaxLength(20);
             e.Property(x => x.Email).IsRequired().HasMaxLength(120);
+            e.Property(x => x.HireDate).IsRequired();
 
             e.HasIndex(x => x.Document).IsUnique();
             e.HasIndex(x => x.Email).IsUnique();
