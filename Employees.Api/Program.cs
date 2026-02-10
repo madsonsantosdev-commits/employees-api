@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Controllers (MVC)
 builder.Services.AddControllers();
 
+// Memory cache
+builder.Services.AddMemoryCache();
+
 // Swagger (OpenAPI via Swashbuckle)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -20,7 +23,6 @@ builder.Services.AddSwaggerGen(options =>
         Description = "CRUD de funcionários - Madson Santos"
     });
 
-    // XML Comments (opcional)
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     if (File.Exists(xmlPath))
@@ -38,12 +40,22 @@ if (string.IsNullOrWhiteSpace(connString))
 }
 
 // EF Core (SQL Server 2025)
-builder.Services.AddDbContext<AppDbContext>(opt =>
+
+builder.Services.AddDbContextPool<AppDbContext>(opt =>
     opt.UseSqlServer(connString, sql => sql.EnableRetryOnFailure())
 );
 
 // DI
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+
+// CORS (Angular Dev)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AngularDev", policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
@@ -58,7 +70,14 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+
+app.UseCors("AngularDev");
 
 app.MapControllers();
 
