@@ -4,6 +4,7 @@ using Employees.Api.Models;
 using Employees.Api.Repositories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Xunit;
 
@@ -13,11 +14,13 @@ public class EmployeesControllerTests
 {
     private readonly Mock<IEmployeeRepository> _repoMock;
     private readonly EmployeesController _controller;
+    private readonly IMemoryCache _cache;
 
     public EmployeesControllerTests()
     {
         _repoMock = new Mock<IEmployeeRepository>(MockBehavior.Strict);
-        _controller = new EmployeesController(_repoMock.Object);
+        _cache = new MemoryCache(new MemoryCacheOptions());
+        _controller = new EmployeesController(_repoMock.Object, _cache);
     }
 
     [Fact]

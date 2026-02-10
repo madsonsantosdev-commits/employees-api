@@ -4,6 +4,7 @@ using Employees.Api.Models;
 using Employees.Api.Repositories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Xunit;
 
@@ -13,11 +14,13 @@ public class UnitTest1
 {
     private readonly Mock<IEmployeeRepository> _repositoryMock;
     private readonly EmployeesController _controller;
+    private readonly IMemoryCache _cache;
 
     public UnitTest1()
     {
         _repositoryMock = new Mock<IEmployeeRepository>(MockBehavior.Strict);
-        _controller = new EmployeesController(_repositoryMock.Object);
+        _cache = new MemoryCache(new MemoryCacheOptions());
+        _controller = new EmployeesController(_repositoryMock.Object, _cache);
     }
 
     [Fact]
@@ -39,11 +42,11 @@ public class UnitTest1
         };
 
         _repositoryMock
-            .Setup(r => r.GetAllAsync(ct))
+            .Setup(r => r.GetAllAsync(null, null, null, ct))
             .ReturnsAsync(employees);
 
         // Act
-        var result = await _controller.GetAll(ct);
+        var result = await _controller.GetAll(null, null, null, ct);
 
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();
