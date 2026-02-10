@@ -2,6 +2,7 @@ using Employees.Api.Dtos;
 using Employees.Api.Models;
 using Employees.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Employees.Api.Controllers;
 
@@ -27,10 +28,10 @@ public class EmployeesController : ControllerBase
 	public async Task<ActionResult<Employee>> Create(EmployeeCreateDto dto, CancellationToken ct)
 	{
 		if (await _repo.GetByDocumentAsync(dto.Document, ct) is not null)
-			return Conflict(new { message = "Document já cadastrado." });
+			return Conflict(new { message = "Document ja cadastrado." });
 
 		if (await _repo.GetByEmailAsync(dto.Email, ct) is not null)
-			return Conflict(new { message = "Email já cadastrado." });
+			return Conflict(new { message = "Email ja cadastrado." });
 
 		var employee = new Employee
 		{
@@ -41,7 +42,14 @@ public class EmployeesController : ControllerBase
 			IsActive = true
 		};
 
-		await _repo.AddAsync(employee, ct);
+		try
+		{
+			await _repo.AddAsync(employee, ct);
+		}
+		catch (DbUpdateException)
+		{
+			return Conflict(new { message = "Funcionario ja existe com o mesmo documento ou email." });
+		}
 
 		return CreatedAtAction(nameof(GetById), new { id = employee.Id }, employee);
 	}
@@ -52,17 +60,28 @@ public class EmployeesController : ControllerBase
 		var employee = await _repo.GetByIdAsync(id, ct);
 		if (employee is null) return NotFound();
 
-		// Regras simples: não validar duplicidade de email aqui sem comparar id
+		var existingDocument = await _repo.GetByDocumentAsync(dto.Document, ct);
+		if (existingDocument is not null && existingDocument.Id != id)
+			return Conflict(new { message = "Document ja cadastrado." });
+
 		var existingEmail = await _repo.GetByEmailAsync(dto.Email, ct);
 		if (existingEmail is not null && existingEmail.Id != id)
-			return Conflict(new { message = "Email já cadastrado." });
+			return Conflict(new { message = "Email ja cadastrado." });
 
 		employee.FullName = dto.FullName;
+		employee.Document = dto.Document;
 		employee.Email = dto.Email;
 		employee.HireDate = dto.HireDate;
 		employee.IsActive = dto.IsActive;
 
-		await _repo.UpdateAsync(employee, ct);
+		try
+		{
+			await _repo.UpdateAsync(employee, ct);
+		}
+		catch (DbUpdateException)
+		{
+			return Conflict(new { message = "Funcionario ja existe com o mesmo documento ou email." });
+		}
 		return NoContent();
 	}
 
