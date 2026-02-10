@@ -1,10 +1,10 @@
 # employees-api
 Autor: Madson Santos - 2026-02-09 00:00
-API REST em .NET 8 (ASP.NET Core) para cadastro de funcionarios, com EF Core (SQLite), validacao basica e Swagger.
+API REST em .NET 8 (ASP.NET Core) para cadastro de funcionarios, com EF Core (SQL Server), validacao basica e Swagger.
 
 ## Visao geral
 - CRUD completo de funcionarios (criar, listar, obter por id, atualizar, remover)
-- Persistencia com SQLite via EF Core
+- Persistencia com SQL Server via EF Core
 - Documentacao interativa com Swagger
 
 ## Stack
